@@ -45,13 +45,32 @@ def download_pdf(driver:'WebDriver', path:'Path'):
         disciplina_nome = disciplina.find_element(By.CSS_SELECTOR, "h5 span").get_attribute("textContent")
         aulas_target = disciplina.find_element(By.TAG_NAME, "div").get_attribute("data-target")
         disciplina_path = util.create_folder(path, disciplina_nome)
-        aulas = disciplina.find_elements(By.CSS_SELECTOR, f"{aulas_target} > div")
-        for aula in aulas[:1]:
-            aula_nome = aula.find_element(By.CSS_SELECTOR, "h5 span").get_attribute("textContent") 
-            target = aula.find_element(By.TAG_NAME, "div").get_attribute("data-target")
-            aula_path = util.create_folder(disciplina_path, f'pdf{os.sep}{aula_nome.strip()}')
-            conteudos = aula.find_elements(By.CSS_SELECTOR, f'{target} .card-body .item')
-            for conteudo in conteudos[:1]:
+        try:
+            aulas = disciplina.find_elements(By.CSS_SELECTOR, f"{aulas_target} > div")
+            for aula in aulas[:1]:
+                aula_nome = aula.find_element(By.CSS_SELECTOR, "h5 span").get_attribute("textContent") 
+                target = aula.find_element(By.TAG_NAME, "div").get_attribute("data-target")
+                aula_path = util.create_folder(disciplina_path, f'pdf{os.sep}{aula_nome.strip()}')
+                conteudos = aula.find_elements(By.CSS_SELECTOR, f'{target} .card-body .item')
+                for conteudo in conteudos[:1]:
+                    conteudo_nome = conteudo.find_element(By.CLASS_NAME, 'text-color-hover-blue-600').get_attribute("textContent")
+                    try:
+                        pdf_url = conteudo.find_element(By.CSS_SELECTOR, 'a[aria-label="Baixar aula em PDF"]').get_attribute("href")
+                        print("---- Baixando pdf: ", conteudo_nome)
+                        util.download_file(driver, pdf_url, aula_path, conteudo_nome)
+                        util.wait_sleep(2, 4)
+                    except NoSuchElementException as err:
+                        print("Pdf não encontrado.")
+                    refresh_session(driver, 2)
+        except NoSuchElementException:
+            print('---- Layout tipo 2.')
+            links_videos = {}
+            toggle = driver.find_element(By.CSS_SELECTOR, f'div[data-target="{aulas_target}"]')
+            driver.execute_script("arguments[0].click();",  toggle)
+            util.wait_sleep(2, 2)
+            conteudos = driver.find_elements(By.CSS_SELECTOR, f'{aulas_target} .card-body .item')
+            aula_path = util.create_folder(disciplina_path, 'pdf')
+            for conteudo in conteudos[:2]:
                 conteudo_nome = conteudo.find_element(By.CLASS_NAME, 'text-color-hover-blue-600').get_attribute("textContent")
                 try:
                     pdf_url = conteudo.find_element(By.CSS_SELECTOR, 'a[aria-label="Baixar aula em PDF"]').get_attribute("href")
@@ -112,7 +131,6 @@ def download_video_aulas(driver:'WebDriver', path:'Path'):
         disciplina_nome = disciplina.find_element(By.CSS_SELECTOR, "h5 span").get_attribute("textContent")
         aulas_target = disciplina.find_element(By.TAG_NAME, "div").get_attribute("data-target")
         disciplina_path = util.create_folder(path, disciplina_nome)
-        print(disciplina_nome)
         try:
             aulas = disciplina.find_elements(By.CSS_SELECTOR, f"{aulas_target} > div")
             for aula in aulas[:1]:
@@ -129,22 +147,19 @@ def download_video_aulas(driver:'WebDriver', path:'Path'):
         except NoSuchElementException:
             print('---- Layout tipo 2.')
             links_videos = {}
-            util.click_point(driver, disciplina)
+            toggle = driver.find_element(By.CSS_SELECTOR, f'div[data-target="{aulas_target}"]')
+            driver.execute_script("arguments[0].click();",  toggle)
             util.wait_sleep(2, 2)
-            print(aulas_target)
-            conteudos = driver.find_element(By.CSS_SELECTOR, f'{aulas_target}')
-            print(conteudos.get_attribute('innerHTML'))
-            """"aula_path = util.create_folder(disciplina_path, 'videos')
+            conteudos = driver.find_elements(By.CSS_SELECTOR, f'{aulas_target} .card-body .item')
+            aula_path = util.create_folder(disciplina_path, 'videos')
             for conteudo in conteudos[:2]:
-                print(conteudo.get_attribute('innerHTML'))
                 a = conteudo.find_element(By.CSS_SELECTOR, "label a")
                 link = a.get_attribute("href")
                 nome = a.get_attribute("textContent")
                 links_videos[nome] = link
-                refresh_session(driver, 2)"""
-        print(links_videos)
-        #download_videos(driver, aula_path, links_videos)
-        #driver.switch_to.window(driver.window_handles[2])
+                refresh_session(driver, 2)
+        download_videos(driver, aula_path, links_videos)
+        driver.switch_to.window(driver.window_handles[2])
         util.wait_sleep(1, 2)
 
 def download_concurso(driver:'WebDriver', link:str, nome:str):
@@ -156,7 +171,7 @@ def download_concurso(driver:'WebDriver', link:str, nome:str):
     driver.execute_script(f"window.open('{link}', '_blank')")
     driver.switch_to.window(driver.window_handles[2])
     util.wait_sleep(4, 6)
-    download_video_aulas(driver, path)
+    #download_video_aulas(driver, path)
     download_pdf(driver, path)
     download_materiais(driver, path)
     driver.close()
