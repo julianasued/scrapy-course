@@ -89,7 +89,7 @@ def download_videos(driver:'WebDriver', path:'Path', links:dict):
     Faz o download dos videos passados
     """
     nova_aba = True
-    for nome, link in sorted(links.items())[:1]:
+    for nome, link in links.items():
         print("---- Baixando video: ", nome)
         if nova_aba:
             driver.execute_script(f"window.open('{link}', '_blank')")
@@ -146,7 +146,6 @@ def download_concurso(driver:'WebDriver', link:str, nome:str):
     download_materiais(driver, path)
     driver.close()
 
- 
 
 def download_concursos(driver:'WebDriver', pagina=1):
     """
