@@ -15,6 +15,9 @@ def load_config():
     f.close()
     return config
 
+def clean_name(name:str):
+    return name.replace('/', '-').replace('.', '').strip()[:122]
+
 
 def wait_loading(driver:'WebDriver'):
     WebDriverWait(driver=driver, timeout=10).until(
@@ -32,13 +35,13 @@ def click_point(driver:'WebDriver', elem):
 
 
 def create_root_folder(root:str, name:str):
-    path = Path(f'{root}{os.sep}{name}')
+    path = Path(f'{root}{os.sep}{clean_name(name)}')
     path.mkdir(parents=True, exist_ok=True)
     return path
 
 
 def create_folder(path:'Path', name:str):
-    path = path / name.strip()
+    path = path / clean_name(name)
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -51,8 +54,7 @@ def download_file(driver:'WebDriver', url:str, path:'Path', name:str):
     s.headers.update(headers)
     s.cookies.update( {c['name']:c['value'] for c in driver.get_cookies()} )
     response = s.get(url)
-    name = name.replace('/', '-')
-    file = open(path / f"{name.strip()}.pdf", 'wb')
+    file = open(path / f"{clean_name(name)[:55]}.pdf", 'wb')
     file.write(response.content)
     file.close()
 
@@ -64,9 +66,6 @@ def download_video(url, name, path):
     s = requests.session()
     s.headers.update(headers)
     response = s.get(url)
-    name = name.replace('/', '-')
-    file = open(path / f"{name.strip()}.mp4", 'wb')
+    file = open(path / f"{clean_name(name)[:55]}.mp4", 'wb')
     file.write(response.content)
     file.close()
-
-    
