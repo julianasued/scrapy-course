@@ -1,6 +1,6 @@
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.action_chains import ActionChains
 from pathlib import Path
 import random
 import time
@@ -10,7 +10,7 @@ import os
 
 
 def load_config():
-    f = open('configuracoes.json')
+    f = open('configuracoes.json', encoding='utf-8')
     config = json.load(f)
     f.close()
     return config
@@ -24,6 +24,11 @@ def wait_loading(driver:'WebDriver'):
 
 def wait_sleep(a, b):
     time.sleep(random.randint(a, b))
+
+
+def click_point(driver:'WebDriver', elem):
+    ac = ActionChains(driver)
+    ac.move_to_element(elem).move_by_offset(1, 1).click().perform()
 
 
 def create_root_folder(root:str, name:str):
