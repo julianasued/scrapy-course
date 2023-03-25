@@ -77,7 +77,7 @@ def download_pdf(driver:'WebDriver', path:'Path'):
                 conteudo_nome = conteudo.find_element(By.CLASS_NAME, 'text-color-hover-blue-600').get_attribute("textContent")
                 try:
                     pdf_url = conteudo.find_element(By.CSS_SELECTOR, 'a[aria-label="Baixar aula em PDF"]').get_attribute("href")
-                    if util.check_already_file(aula_path, nome, 'pdf'):
+                    if util.check_already_file(aula_path, conteudo_nome, 'pdf'):
                         print('---- Arquivo já existe: ', str(aula_path / conteudo_nome))
                         continue
                     print("---- Baixando pdf: ", conteudo_nome)
