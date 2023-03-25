@@ -148,7 +148,7 @@ def download_video_aulas(driver:'WebDriver', path:'Path'):
             for aula in aulas:
                 links_videos = {}
                 aula_nome = aula.find_element(By.CSS_SELECTOR, "h5 span").get_attribute("textContent") 
-                aula_path = util.create_folder(disciplina_path, os.path.join('videos', aula_nome.strip()))
+                aula_path = util.create_folder(disciplina_path, os.path.join('videos'+os.sep, aula_nome.strip()))
                 conteudos = aula.find_elements(By.CSS_SELECTOR, '.card-body .item')
                 for conteudo in conteudos:
                     a = conteudo.find_element(By.CSS_SELECTOR, "label a")
