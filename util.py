@@ -69,3 +69,8 @@ def download_video(url, name, path):
     file = open(path / f"{clean_name(name)[:55]}.mp4", 'wb')
     file.write(response.content)
     file.close()
+
+
+def check_already_file(path, name, type_):
+    path = path / f"{clean_name(name)[:55]}.{type_}"
+    return os.path.isfile(path)

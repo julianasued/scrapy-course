@@ -57,6 +57,9 @@ def download_pdf(driver:'WebDriver', path:'Path'):
                     conteudo_nome = conteudo.find_element(By.CLASS_NAME, 'text-color-hover-blue-600').get_attribute("textContent")
                     try:
                         pdf_url = conteudo.find_element(By.CSS_SELECTOR, 'a[aria-label="Baixar aula em PDF"]').get_attribute("href")
+                        if util.check_already_file(aula_path, conteudo_nome, 'pdf'):
+                            print('---- Arquivo já existe: ', str(aula_path / conteudo_nome))
+                            continue
                         print("---- Baixando pdf: ", conteudo_nome)
                         util.download_file(driver, pdf_url, aula_path, conteudo_nome)
                         util.wait_sleep(2, 4)
@@ -74,6 +77,9 @@ def download_pdf(driver:'WebDriver', path:'Path'):
                 conteudo_nome = conteudo.find_element(By.CLASS_NAME, 'text-color-hover-blue-600').get_attribute("textContent")
                 try:
                     pdf_url = conteudo.find_element(By.CSS_SELECTOR, 'a[aria-label="Baixar aula em PDF"]').get_attribute("href")
+                    if util.check_already_file(aula_path, nome, 'pdf'):
+                        print('---- Arquivo já existe: ', str(aula_path / conteudo_nome))
+                        continue
                     print("---- Baixando pdf: ", conteudo_nome)
                     util.download_file(driver, pdf_url, aula_path, conteudo_nome)
                     util.wait_sleep(2, 4)
@@ -95,6 +101,9 @@ def download_materiais(driver:'WebDriver', path:'Path'):
     for material in materiais:
         material_nome = material.find_element(By.CSS_SELECTOR, ".lh-5").get_attribute("textContent")
         material_url = material.find_element(By.TAG_NAME, "a").get_attribute("href")
+        if util.check_already_file(materiais_path, material_nome, 'pdf'):
+            print('---- Arquivo já existe: ', str(materiais_path / material_nome))
+            continue
         print("---- Baixando material: ", material_nome)
         util.download_file(driver, material_url, materiais_path, material_nome)
         util.wait_sleep(2, 4)
@@ -114,10 +123,12 @@ def download_videos(driver:'WebDriver', path:'Path', links:dict):
             nova_aba = False
         else:
             driver.get(link)
-        
-        util.wait_loading(driver)
-        video_url = driver.find_element(By.TAG_NAME, "video").get_attribute("src")
-        util.download_video(video_url, nome, path)
+        try:
+            util.wait_loading(driver)
+            video_url = driver.find_element(By.TAG_NAME, "video").get_attribute("src")
+            util.download_video(video_url, nome, path)
+        except NoSuchElementException:
+            print('Erro: video não encontrado.')
         refresh_session(driver, 3)
     driver.close()
 
@@ -137,14 +148,21 @@ def download_video_aulas(driver:'WebDriver', path:'Path'):
             for aula in aulas:
                 links_videos = {}
                 aula_nome = aula.find_element(By.CSS_SELECTOR, "h5 span").get_attribute("textContent") 
-                aula_path = util.create_folder(disciplina_path, f'videos{os.sep}{aula_nome.strip()}')
+                aula_path = util.create_folder(disciplina_path, os.path.join('videos', aula_nome.strip()))
                 conteudos = aula.find_elements(By.CSS_SELECTOR, '.card-body .item')
                 for conteudo in conteudos:
                     a = conteudo.find_element(By.CSS_SELECTOR, "label a")
                     link = a.get_attribute("href")
                     nome = a.get_attribute("textContent")
+                    if util.check_already_file(aula_path, nome, 'mp4'):
+                        print('---- Arquivo já existe: ', str(aula_path / nome))
+                        continue
                     links_videos[nome] = link
                     refresh_session(driver, 2)
+                if links_videos:
+                    download_videos(driver, aula_path, links_videos)
+                    driver.switch_to.window(driver.window_handles[2])
+                    util.wait_sleep(2, 3)
         except NoSuchElementException:
             print('---- Layout tipo 2.')
             links_videos = {}
@@ -157,11 +175,14 @@ def download_video_aulas(driver:'WebDriver', path:'Path'):
                 a = conteudo.find_element(By.CSS_SELECTOR, "label a")
                 link = a.get_attribute("href")
                 nome = a.get_attribute("textContent")
+                if util.check_already_file(aula_path, nome, 'mp4'):
+                    print('---- Arquivo já existe: ', str(aula_path / nome))
+                    continue
                 links_videos[nome] = link
                 refresh_session(driver, 2)
-        download_videos(driver, aula_path, links_videos)
-        driver.switch_to.window(driver.window_handles[2])
-        util.wait_sleep(2, 3)
+            download_videos(driver, aula_path, links_videos)
+            driver.switch_to.window(driver.window_handles[2])
+            util.wait_sleep(2, 3)
 
 def download_concurso(driver:'WebDriver', link:str, nome:str):
     """
