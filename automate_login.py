@@ -124,7 +124,7 @@ def download_videos(driver:'WebDriver', path:'Path', links:dict):
         else:
             driver.get(link)
         try:
-            util.wait_loading(driver)
+            util.wait_sleep(4, 6)
             video_url = driver.find_element(By.TAG_NAME, "video").get_attribute("src")
             util.download_video(video_url, nome, path)
         except NoSuchElementException:

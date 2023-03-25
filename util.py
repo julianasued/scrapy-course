@@ -16,7 +16,7 @@ def load_config():
     return config
 
 def clean_name(name:str):
-    return name.replace('/', '-').replace('.', '').strip()[:122]
+    return name.replace('/', '-').replace('.', '').replace(':', '').strip()[:122]
 
 
 def wait_loading(driver:'WebDriver'):
