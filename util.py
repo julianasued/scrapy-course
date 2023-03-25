@@ -16,7 +16,7 @@ def load_config():
     return config
 
 def clean_name(name:str):
-    char_remove = ['.', ':', '"', '”', '>', '<', '\\', '?', '|']
+    char_remove = ['.', ':', '"', '”', '>', '<', '?', '|']
     name = name.replace('/', '-')
     for char in char_remove:
         name = name.replace(char, '')
